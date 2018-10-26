@@ -1,15 +1,15 @@
 module Jekyll
     class RenderTimeTag < Liquid::Tag
-
-      def initialize(tag_name, text, tokens)
+        def initialize(tag_name, input, tokens)
         super
-        @text = text
-      end
+        @input = input
+        end
 
-      def render(context)
-        @text
-      end
+        def render(context)
+        data = context.registers[:site].data["swagger_specifications"]["petstore"]
+        "#{@input} #{data}"
+        end
     end
-  end
+end
 
-  Liquid::Template.register_tag('render_time', Jekyll::RenderTimeTag)
+Liquid::Template.register_tag('render_time', Jekyll::RenderTimeTag)
