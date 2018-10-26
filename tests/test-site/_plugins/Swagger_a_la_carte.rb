@@ -10,7 +10,6 @@ module Jekyll
             # swagger path
             input_path = input.split[0].split('.')
             classifyArr(input_path)
-            puts input_path
             @parsed_input = input_path
 
             # json options
@@ -23,10 +22,12 @@ module Jekyll
             data = context.registers[:site].data["swagger_specifications"]["petstore"]
             if data['swagger'] != '2.0'
                 "Swagger Version not supported"
-            else
+            elsif @parsed_input[-1]['type'] == 'Schema Object'
                 so = Salc::SchemaObject.new(@parsed_input, @parsed_options, context)
+                puts so.get_output()
                 "#{so.get_output()}"
-                # "#{@input} #{data}"
+            else 
+                puts 'not currently supported'
             end
         end
 
@@ -77,14 +78,14 @@ module Jekyll
                 when 'externalDocs'
                     'External Documentation Object'
                 else 
-                    'undefined'
+                    nil
                 end
             elsif arr[i-1]['type'] == 'Paths Object'
                 # Paths object
                 if arr[i]['sub_path'][0] == '/'
                     'Path Item Object'
                 else
-                    'undefined'
+                    nil
                 end
             elsif arr[i-1]['type'] == 'Definitions Object'
                 # Schema Object
@@ -94,31 +95,18 @@ module Jekyll
                 if arr[i]['sub_path'] == 'properties'
                     '[Schema Object]'
                 else
-                    'undefined'
+                    nil
                 end
             elsif arr[i-1]['type'] == 'Path Item Object'
-                case arr[i]['sub_path']
+                if ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'].include?(arr[i]['sub_path'])
+                    'Operation Object'
+                elsif arr[i]['sub_path'] == 'parameters'
+                    'string'
                 # Swagger object
                 #when '$ref'
                 #    'string'
-                when 'get'
-                    'Operation Object'
-                when 'put'
-                    'Operation Object'
-                when 'post'
-                    'Operation Object'
-                when 'delete'
-                    'Operation Object'
-                when 'options'
-                    'Operation Object'
-                when 'head'
-                    'Operation Object'
-                when 'patch'
-                    'Operation Object'
-                when 'parameters'
-                   'string'
                 else
-                    'undefined'
+                    nil
                 end
             end
         end

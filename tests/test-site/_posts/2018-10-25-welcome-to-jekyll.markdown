@@ -18,7 +18,7 @@ print_hi('Tom')
 #=> prints 'Hi, Tom' to STDOUT.
 {% endhighlight %}
 
-<p>{% swagger_alc petstore.definitions.Pet {} %}</p>
+<p>{% swagger_alc petstore.definitions.Pet {"key1":"value1","key2":"value2"} %}</p>
 
 <!-- site.data.swagger_specifications.petstore.swagger.json -->
 
