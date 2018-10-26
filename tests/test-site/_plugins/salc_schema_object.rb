@@ -86,6 +86,7 @@ module Salc
         def format_properties()
             output = ""
             if @object.has_key?("properties")
+                output += "<div>Properties:</div>"
                 @data.push({"sub_path" => "properties", "type" => "object"})
                 @object["properties"].each do |key, value|
                     property_data = {"sub_path" => key, "type" => "Schema Object"}
