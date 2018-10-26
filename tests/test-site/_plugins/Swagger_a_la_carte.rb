@@ -86,11 +86,21 @@ module Jekyll
                 else
                     'undefined'
                 end
+            elsif arr[i-1]['type'] == 'Definitions Object'
+                # Schema Object
+                'Schema Object'
+            elsif arr[i-1]['type'] == 'Schema Object'
+                # if properties, we are dealing with an array of Schema object
+                if arr[i]['sub_path'] == 'properties'
+                    '[Schema Object]'
+                else
+                    'undefined'
+                end
             elsif arr[i-1]['type'] == 'Path Item Object'
                 case arr[i]['sub_path']
                 # Swagger object
-                when '$ref'
-                    'string'
+                #when '$ref'
+                #    'string'
                 when 'get'
                     'Operation Object'
                 when 'put'
