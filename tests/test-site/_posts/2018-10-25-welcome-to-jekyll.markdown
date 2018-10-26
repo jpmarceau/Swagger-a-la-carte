@@ -18,7 +18,9 @@ print_hi('Tom')
 #=> prints 'Hi, Tom' to STDOUT.
 {% endhighlight %}
 
-<p>{% render_time hello world %}</p>
+<p>{% swagger_alc SearchAPI.paths./pet.get {} %}</p>
+
+<!-- site.data.swagger_specifications.petstore.swagger.json -->
 
 Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
 
