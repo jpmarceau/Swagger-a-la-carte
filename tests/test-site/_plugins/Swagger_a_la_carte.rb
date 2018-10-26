@@ -24,7 +24,6 @@ module Jekyll
                 "Swagger Version not supported"
             elsif @parsed_input[-1]['type'] == 'Schema Object'
                 so = Salc::SchemaObject.new(@parsed_input, @parsed_options, context)
-                puts so.get_output()
                 "#{so.get_output()}"
             else 
                 'not supported'
