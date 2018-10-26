@@ -18,6 +18,7 @@ module Jekyll
         end
 
         def render(context)
+            puts @parsed_input[-1]['type']
             # Ensure the swagger version is supported
             data = context.registers[:site].data["swagger_specifications"]["SearchApi"]
             if data['swagger'] != '2.0'
@@ -25,8 +26,9 @@ module Jekyll
             elsif @parsed_input[-1]['type'] == 'Schema Object'
                 so = Salc::SchemaObject.new(@parsed_input, @parsed_options, context)
                 "#{so.get_output()}"
-            else 
-                'not supported'
+            else
+                so = Salc::SchemaObject.new(@parsed_input, @parsed_options, context)
+                "#{so.get_output()}"
             end
         end
 
@@ -76,7 +78,7 @@ module Jekyll
                     '[Tag Object]'
                 when 'externalDocs'
                     'External Documentation Object'
-                else 
+                else
                     nil
                 end
             elsif arr[i-1]['type'] == 'Paths Object'

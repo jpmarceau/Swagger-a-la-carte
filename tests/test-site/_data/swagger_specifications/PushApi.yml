@@ -1,0 +1,2033 @@
+basePath: /v1
+definitions:
+  BaseIdentityBody:
+    properties:
+      identity:
+        $ref: '#/definitions/Identity'
+    type: object
+  DocumentBody:
+    additionalProperties:
+      description: "The metadata key-value pairs to push along with the item (see\
+        \ [Understanding Push Source Item Metadata](https://developers.coveo.com/x/B489Ag)).\
+        \  \n**Note:**  \nThis specification indicates that metadata values must be\
+        \ of the string type, but other types of metadata values are also actually\
+        \ supported (see [Allowed Metadata Types](https://developers.coveo.com/x/UgBPAg))."
+      type: string
+    properties:
+      compressedBinaryData:
+        description: "The Base64-encoded item data.  \nDepending on your specific\
+          \ needs, you can either use the `data`, `compressedBinaryData`, or `compressedBinaryDataFileId`\
+          \ property to push item data (see [Pushing Item Data](https://developers.coveo.com/x/h449Ag)).\
+          \  \n**Example:** `\"H4sIAAAAAAAA/0utSMwtyEkFAJ+b7G4HAAAA\"`"
+        type: string
+      compressedBinaryDataFileId:
+        description: "The unique identifier of the file container where the compressed\
+          \ or uncompressed, binary or non-binary item data was previously uploaded\
+          \ (see [Creating a File Container](https://developers.coveo.com/x/dIE9Ag)).\
+          \  \nDepending on your specific needs, you can either use the `data`, `compressedBinaryData`,\
+          \ or `compressedBinaryDataFileId` property to push item data (see [Pushing\
+          \ Item Data](https://developers.coveo.com/x/h449Ag)).  \n**Example:** `\"\
+          b5e8767e-8f0d-4a89-9095-1127915c89c7\"`"
+        type: string
+      data:
+        description: "The raw textual item data.  \nDepending on your specific needs,\
+          \ you can either use the `data`, `compressedBinaryData`, or `compressedBinaryDataFileId`\
+          \ property to push item data (see [Pushing Item Data](https://developers.coveo.com/x/h449Ag)).\
+          \  \n**Example:** `\"<div>My raw textual item data</div>\"`"
+        type: string
+      fileExtension:
+        description: "The file extension of the item data you are pushing.  \nValue\
+          \ must include a preceding `.` character.  \nSpecifying a value for this\
+          \ property is typically only useful when using the `compressedBinaryData`\
+          \ or `compressedBinaryDataFileId` property to push compressed item data.\
+          \  \n**Example:** `\".html\"`"
+        type: string
+      parentId:
+        description: "The URI of the parent item.  \nSpecifying a value for this property\
+          \ defines a parent-child relationship between the two items in the index.\
+          \  \n**Example:** `\"file://folder/\"`"
+        type: string
+      permissions:
+        items:
+          $ref: '#/definitions/PermissionSetsModel'
+          description: "The permission sets for this item.  \nThis is only useful\
+            \ when pushing items in a secured Push source.  \nA security identity\
+            \ must be explicitly allowed in **all** permission sets, and not be explicitly\
+            \ denied in **any** permission set to be allowed to see the item.  \n\
+            **Note:**  \n> The permission model described in this specification is\
+            \ flexible enough to allow you to faithfully replicate most secured enterprise\
+            \ systems (see [Simple Permision Model Definition Examples](https://developers.coveo.com/x/aY49Ag)).\
+            \ However, the Push API also accepts a more complex permission model which\
+            \ allows you to define multiple permission levels and sets (see [Complex\
+            \ Permission Model Definition Example](https://developers.coveo.com/x/0pQ9Ag))."
+        type: array
+    type: object
+  Empty:
+    type: object
+  Error:
+    properties:
+      errorCode:
+        type: string
+      message:
+        type: string
+    type: object
+  GatewayTimeoutError:
+    properties:
+      message:
+        type: string
+    type: object
+  Identity:
+    properties:
+      additionalInfo:
+        additionalProperties:
+          type: string
+        type: object
+      name:
+        description: "The unique name of the security identity.  \n**Example:** `\"\
+          Alpha Group\""
+        type: string
+      type:
+        description: "The security identity type.  \n- `UNKNOWN`: a security identity\
+          \ whose type is unknown.  \n- `USER`: an individual user security identity\
+          \  \n- `GROUP`: an existing group in the original secured enterprise system.\
+          \ Groups can have members of any valid security identity `type` (i.e., `UNKNOWN`,\
+          \ `USER`, `GROUP`, or `VIRTUAL_GROUP`).  \n- `VIRTUAL_GROUP`: a group that\
+          \ does not exist in the original secured enterprise system. Mechanically,\
+          \ a `VIRTUAL_GROUP` works just like a `GROUP`.  \n**Example:** `\"GROUP\""
+        enum:
+        - USER
+        - GROUP
+        - VIRTUAL_GROUP
+        - UNKNOWN
+        type: string
+    type: object
+  IdentityBody:
+    properties:
+      identity:
+        $ref: '#/definitions/Identity'
+      members:
+        items:
+          $ref: '#/definitions/Identity'
+          description: "The security identities to include as children of this security\
+            \ identity.  \n**Notes:**  \n>- Only security identities whose `type`\
+            \ is `GROUP` or `VIRTUAL_GROUP` typically have an array of `members`.\
+            \  \n>- A security identity in the `members` array can be of any valid\
+            \ `type` (i.e., `UNKNOWN`, `USER`, `GROUP`, or `VIRTUAL_GROUP`)."
+        type: array
+      wellKnowns:
+        items:
+          $ref: '#/definitions/Identity'
+          description: "The granted identities to give to this security identity.\
+            \  \n**Notes:**  \n>- While all security identity types (i.e., `UNKNOWN`,\
+            \ `USER`, `GROUP`, and `VIRTUAL_GROUP`) are theoretically available, only\
+            \ security identities whose `type` is `GROUP` or `VIRTUAL_GROUP` should\
+            \ be given as granted identities.  \n>- For legacy reasons, the Push API\
+            \ requires you to specify *granted identities* in an array property whose\
+            \ name is `wellKnowns`."
+        type: array
+    type: object
+  MappedIdentity:
+    properties:
+      additionalInfo:
+        additionalProperties:
+          type: string
+        type: object
+      name:
+        description: "The unique name of the security identity to establish an alias\
+          \ relationship with.  \n**Example:** `\"alice@example.com\""
+        type: string
+      provider:
+        description: "The unique identifier of the security identity provider where\
+          \ the security identity to establish an alias relationship with is defined.\
+          \  \nThe security identity provider you are pushing the security identity\
+          \ alias to **must** cascade to this `provider`.  \n**Note:**  \n> Specifying\
+          \ a `provider` is only necessary when the security identity provider you\
+          \ are pushing the security identity alias to cascades to multiple security\
+          \ identity providers. If the target security identity provider cascades\
+          \ to a single security identity provider, the service automatically sets\
+          \ the `provider` value to the unique identifier of that cascading security\
+          \ identity provider.  \n**Example:** `\"My Security Identity Provider\""
+        type: string
+      type:
+        description: "The type of the security identity to establish an alias relationship\
+          \ with.  \n**Note:**  \n> While all security identity types (i.e., `UNKNOWN`,\
+          \ `USER`, `GROUP`, and `VIRTUAL_GROUP`) are theoretically available, you\
+          \ should normally establish alias relationships exclusively between security\
+          \ identities whose `type` is `USER`.  \n**Example:** `\"USER\""
+        enum:
+        - USER
+        - GROUP
+        - VIRTUAL_GROUP
+        - UNKNOWN
+        type: string
+    type: object
+  MappedIdentityBody:
+    properties:
+      identity:
+        $ref: '#/definitions/Identity'
+      mappings:
+        items:
+          $ref: '#/definitions/MappedIdentity'
+          description: The security identities to establish an alias relationship
+            with.
+        type: array
+      wellKnowns:
+        items:
+          $ref: '#/definitions/Identity'
+          description: "The granted identities to give to this security identity alias.\
+            \  \n**Notes:**  \n>- While all security identity types (i.e., `UNKNOWN`,\
+            \ `USER`, `GROUP`, and `VIRTUAL_GROUP`) are theoretically available, only\
+            \ security identities whose `type` is `GROUP` or `VIRTUAL_GROUP` should\
+            \ be given as granted identities.  \n>- For legacy reasons, the Push API\
+            \ requires you to specify *granted identities* in an array property whose\
+            \ name is `wellKnowns`."
+        type: array
+    type: object
+  PermissionIdentityModel:
+    properties:
+      identity:
+        description: "The unique name of the security identity, as defined in the\
+          \ security identity provider of the target Push source (see [Managing Security\
+          \ Identities in a Security Identity Provider](https://developers.coveo.com/x/-JQ9Ag)).\
+          \  \n**Example:** `\"asmith@example.com\"`"
+        type: string
+      identityType:
+        description: "The type of the security identity, as defined in the security\
+          \ identity provider of the target Push source (see [Managing Security Identities\
+          \ in a Security Identity Provider](https://developers.coveo.com/x/-JQ9Ag)).\
+          \  \n**Example:** `\"User\"`"
+        enum:
+        - User
+        - Group
+        - VirtualGroup
+        - Unknown
+        type: string
+    type: object
+  PermissionSetsModel:
+    properties:
+      allowAnonymous:
+        description: Whether this permission set allows anonymous users to see the
+          item in their query results.
+        type: boolean
+      allowedPermissions:
+        items:
+          $ref: '#/definitions/PermissionIdentityModel'
+          description: "The security identities that are explicitly allowed to see\
+            \ the item by this permission set.  \n**Note:**  \n> You must push those\
+            \ security identities in the security identity provider of the target\
+            \ Push source, otherwise they will be in error (see [Managing Security\
+            \ Identities in a Security Identity Provider](https://developers.coveo.com/x/-JQ9Ag))."
+        type: array
+      deniedPermissions:
+        items:
+          $ref: '#/definitions/PermissionIdentityModel'
+          description: "The security identities that are explicitly denied to see\
+            \ the item by this permission set.  \n**Note:**  \n> You must push those\
+            \ security identities in the security identity provider of the target\
+            \ Push source, otherwise they will be in error (see [Managing Security\
+            \ Identities in a Security Identity Provider](https://developers.coveo.com/x/-JQ9Ag))."
+        type: array
+    type: object
+  PresignedUploadUrl:
+    properties:
+      fileId:
+        description: "The unique identifier of the file container.  \nYou can use\
+          \ this identifier as the `fileId` query parameter value when pushing a batch\
+          \ of items or security identities, or as the `compressedBinaryDataFileId`\
+          \ property value when pushing item data.  \n**Example:** `\"b5e8767e-8f0d-4a89-9095-1127915c89c7\"\
+          `"
+        type: string
+      requiredHeaders:
+        additionalProperties:
+          description: The HTTP headers to include when sending a `PUT` request to
+            the `uploadUri`.
+          type: string
+        type: object
+      uploadUri:
+        description: "The presigned URI of the file container.  \nYou can upload data\
+          \ into the file container by sending a `PUT` request whose body is your\
+          \ raw textual data to this URI.  \n**Example:** `\"https://s3.amazonaws.com/coveo-nprod-customerdata/proda/blobstore/[...]\"\
+          `"
+        type: string
+    type: object
+host: push.cloud.coveo.com
+info:
+  description: 'The Push API allows you to *push* items and security identities, as
+    opposed to letting standard Coveo Cloud V2 crawlers *pull* this data from a content
+    repository.
+
+    This is especially useful when you need to index content from a cloud or on-premises
+    system for which no dedicated source type exists in the Coveo Cloud V2 platform.'
+  title: Push API - Coveo Cloud V2
+  version: '2016-03-03T13:22:11Z'
+paths:
+  /organizations/{organizationId}/files:
+    post:
+      description: "Creates a temporary, private, and encrypted Amazon S3 file container\
+        \ where you can safely upload the data of an individual item, or a batch of\
+        \ items or security identities. You can then reference the unique identifier\
+        \ of this file container to actually push this content to a Coveo Cloud V2\
+        \ index.  \nOnce the content of a file container has been successfully forwarded\
+        \ to the Coveo Cloud V2 indexing pipeline, this file container is automatically\
+        \ deleted. In any case, a file container expires after 60 minutes.  \nCreating\
+        \ a file container is a necessary step when you want to:  \n- Use the `compressedBinaryDataFileId`\
+        \ property to push item data (see [Using the compressedBinaryDataFileId Property](https://developers.coveo.com/x/L5M9Ag)).\
+        \  \n- Push a batch of items (see [Managing Batches of Items in a Push Source](https://developers.coveo.com/x/KJE9Ag)).\
+        \  \n- Push a batch of security identities [Managing Batches of Security Identities](https://developers.coveo.com/x/Q5E9Ag))."
+      externalDocs:
+        description: Creating a File Container
+        url: https://developers.coveo.com/x/dIE9Ag
+      parameters:
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '201':
+          description: Created
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/PresignedUploadUrl'
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Create a file container
+      tags:
+      - File Container
+      x-pretty-name: getPresignedUploadUrl
+  /organizations/{organizationId}/providers/{providerId}/mappings:
+    put:
+      consumes:
+      - application/json
+      description: Adds or updates a single security identity alias pointing to one
+        or several security identities in other security identity providers.
+      externalDocs:
+        description: Adding or Updating a Single Alias
+        url: https://developers.coveo.com/x/TpE9Ag
+      parameters:
+      - description: The security identity alias definition.
+        in: body
+        name: mappedIdentityBody
+        required: true
+        schema:
+          $ref: '#/definitions/MappedIdentityBody'
+      - description: "A value indicating the order of arrival of the Push operation\
+          \ in the Coveo Cloud V2 indexing pipeline. A lower value corresponds to\
+          \ an older operation.  \nBy default, the service automatically sets this\
+          \ parameter to the current number of milliseconds since Unix Epoch.  \n\
+          Specifying a custom `orderingId` value is typically not recommended unless\
+          \ you know what you are doing and have a good reason to do so (see [Understanding\
+          \ the orderingId Parameter](https://developers.coveo.com/x/sYo9Ag)).  \n\
+          **Example:**  `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: false
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target security identity provider\
+          \ (see [Creating a Security Identity Provider for a Secured Push Source](https://developers.coveo.com/x/J4w9Ag)).\
+          \  \n**Example:** `My Secured Push Source Security Identity Provider`"
+        in: path
+        name: providerId
+        required: true
+        type: string
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Add or update an alias
+      tags:
+      - Security Identity
+      x-pretty-name: addUpdateMappedIdentity
+  /organizations/{organizationId}/providers/{providerId}/permissions:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a single security identity in the security identity provider
+        of a secured Push source.
+      externalDocs:
+        description: Deleting a Single Security Identity
+        url: https://developers.coveo.com/x/SpE9Ag
+      parameters:
+      - description: The security identity to delete.
+        in: body
+        name: baseIdentityBody
+        required: true
+        schema:
+          $ref: '#/definitions/BaseIdentityBody'
+      - description: "A value indicating the order of arrival of the Push operation\
+          \ in the Coveo Cloud V2 indexing pipeline. A lower value corresponds to\
+          \ an older operation.  \nBy default, the service automatically sets this\
+          \ parameter to the current number of milliseconds since Unix Epoch.  \n\
+          Specifying a custom `orderingId` value is typically not recommended unless\
+          \ you know what you are doing and have a good reason to do so (see [Understanding\
+          \ the orderingId Parameter](https://developers.coveo.com/x/sYo9Ag)).  \n\
+          **Example:**  `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: false
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target security identity provider\
+          \ (see [Creating a Security Identity Provider for a Secured Push Source](https://developers.coveo.com/x/J4w9Ag)).\
+          \  \n**Example:** `My Secured Push Source Security Identity Provider`"
+        in: path
+        name: providerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Delete a security identity
+      tags:
+      - Security Identity
+      x-pretty-name: deleteIdentity
+    put:
+      consumes:
+      - application/json
+      description: Adds or updates a single security identity in the security identity
+        provider of a secured Push source.
+      externalDocs:
+        description: Adding or Updating a Single Security Identity
+        url: https://developers.coveo.com/x/u489Ag
+      parameters:
+      - description: The security identity to add or update.
+        in: body
+        name: identityBody
+        required: true
+        schema:
+          $ref: '#/definitions/IdentityBody'
+      - description: "A value indicating the order of arrival of the Push operation\
+          \ in the Coveo Cloud V2 indexing pipeline. A lower value corresponds to\
+          \ an older operation.  \nBy default, the service automatically sets this\
+          \ parameter to the current number of milliseconds since Unix Epoch.  \n\
+          Specifying a custom `orderingId` value is typically not recommended unless\
+          \ you know what you are doing and have a good reason to do so (see [Understanding\
+          \ the orderingId Parameter](https://developers.coveo.com/x/sYo9Ag)).  \n\
+          **Example:**  `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: false
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target security identity provider\
+          \ (see [Creating a Security Identity Provider for a Secured Push Source](https://developers.coveo.com/x/J4w9Ag)).\
+          \  \n**Example:** `My Secured Push Source Security Identity Provider`"
+        in: path
+        name: providerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Add or update a security identity
+      tags:
+      - Security Identity
+      x-pretty-name: addUpdateIdentity
+  /organizations/{organizationId}/providers/{providerId}/permissions/batch:
+    put:
+      consumes:
+      - application/json
+      description: Manages a batch of security identities in the security identity
+        provider of a secured Push source.
+      externalDocs:
+        description: Managing Batches of Security Identities
+        url: https://developers.coveo.com/x/Q5E9Ag
+      parameters:
+      - description: The unique identifier of the Amazon S3 file container into which
+          the the JSON definition of the security identity update was previously uploaded
+          (see [Creating a File Container](https://developers.coveo.com/x/dIE9Ag)).
+        in: query
+        name: fileId
+        required: true
+        type: string
+      - description: "A value indicating the order of arrival of the Push operation\
+          \ in the Coveo Cloud V2 indexing pipeline. A lower value corresponds to\
+          \ an older operation.  \nBy default, the service automatically sets this\
+          \ parameter to the current number of milliseconds since Unix Epoch.  \n\
+          Specifying a custom `orderingId` value is typically not recommended unless\
+          \ you know what you are doing and have a good reason to do so (see [Understanding\
+          \ the orderingId Parameter](https://developers.coveo.com/x/sYo9Ag)).  \n\
+          **Example:**  `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: false
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target security identity provider\
+          \ (see [Creating a Security Identity Provider for a Secured Push Source](https://developers.coveo.com/x/J4w9Ag)).\
+          \  \n**Example:** `My Secured Push Source Security Identity Provider`"
+        in: path
+        name: providerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Add, update, and/or delete a batch of security identities
+      tags:
+      - Security Identity
+      x-pretty-name: addUpdateDeleteBatchedIdentity
+  /organizations/{organizationId}/providers/{providerId}/permissions/olderthan:
+    delete:
+      description: In a specific security identity provider, deletes all security
+        identities whose last update was made by a Push API operation whose `orderingId`
+        is strictly lower than a specified value.
+      externalDocs:
+        description: Deleting Old Security Identities
+        url: https://developers.coveo.com/x/TJE9Ag
+      parameters:
+      - description: "The lowest Push API operation timestamp value a security identity\
+          \ must be associated to in order not to be deleted from the security identity\
+          \ provider.  \n**Example:** `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: true
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target security identity provider\
+          \ (see [Creating a Security Identity Provider for a Secured Push Source](https://developers.coveo.com/x/J4w9Ag)).\
+          \  \n**Example:** `My Secured Push Source Security Identity Provider`"
+        in: path
+        name: providerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Delete old security identities
+      tags:
+      - Security Identity
+      x-pretty-name: deleteIdentityOlderThan
+  /organizations/{organizationId}/sources/{sourceId}/documents:
+    delete:
+      description: Deletes a specific item from a Push source. Optionally, the items
+        of that item can also be deleted.
+      externalDocs:
+        description: Deleting an Item and Optionally, its Children in a Push Source
+        url: https://developers.coveo.com/x/RpE9Ag
+      parameters:
+      - default: false
+        description: "Whether to also delete the children of the item.  \nParent-child\
+          \ relationships between items in a Push source can be defined using the\
+          \ `parentId` property (see [Understanding the parentId Property](https://developers.coveo.com/x/dJM9Ag))."
+        in: query
+        name: deleteChildren
+        required: false
+        type: boolean
+      - description: "The unique identifier of the item. Must be the item URI.  \n\
+          **Example:** `file://folder/my-file.html`"
+        in: query
+        name: documentId
+        required: true
+        type: string
+      - description: "A value indicating the order of arrival of the Push operation\
+          \ in the Coveo Cloud V2 indexing pipeline. A lower value corresponds to\
+          \ an older operation.  \nBy default, the service automatically sets this\
+          \ parameter to the current number of milliseconds since Unix Epoch.  \n\
+          Specifying a custom `orderingId` value is typically not recommended unless\
+          \ you know what you are doing and have a good reason to do so (see [Understanding\
+          \ the orderingId Parameter](https://developers.coveo.com/x/sYo9Ag)).  \n\
+          **Example:**  `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: false
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target Push source (see [Creating\
+          \ a Push Source](https://developers.coveo.com/x/34s9Ag)).  \n**Example:**\
+          \ `rp5rxzbdz753uhndklv2ztkfgy-mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: sourceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Delete an item and optionally its children
+      tags:
+      - Item
+      x-pretty-name: deleteDocument
+    put:
+      consumes:
+      - application/json
+      description: Adds or updates an individual item in a Push source.
+      externalDocs:
+        description: Adding or Updating a Single Item in a Push Source
+        url: https://developers.coveo.com/x/1409Ag
+      parameters:
+      - description: "The algorithm that was used to compress the item data.  \nSpecifying\
+          \ a value for this parameter is only necessary when using the `compressedBinaryData`\
+          \ or the `compressedBinaryDataFileId` property to push item data (see [Pushing\
+          \ Item Data](https://developers.coveo.com/x/h449Ag)).  \nThe possible values\
+          \ are: `Uncompressed`, `ZLib`, `GZip`, `LZMA`, and `Deflate`. Those values\
+          \ are case-sensitive.  \n**Example:** `ZLib`"
+        enum:
+        - UNCOMPRESSED
+        - ZLIB
+        - GZIP
+        - LZMA
+        - DEFLATE
+        in: query
+        name: compressionType
+        required: false
+        type: string
+      - description: A JSON describing a single item to add or update in a Push source.
+        in: body
+        name: documentBody
+        required: true
+        schema:
+          $ref: '#/definitions/DocumentBody'
+      - description: "The unique identifier of the item. Must be the item URI.  \n\
+          **Example:** `file://folder/my-file.html`"
+        in: query
+        name: documentId
+        required: true
+        type: string
+      - description: "A value indicating the order of arrival of the Push operation\
+          \ in the Coveo Cloud V2 indexing pipeline. A lower value corresponds to\
+          \ an older operation.  \nBy default, the service automatically sets this\
+          \ parameter to the current number of milliseconds since Unix Epoch.  \n\
+          Specifying a custom `orderingId` value is typically not recommended unless\
+          \ you know what you are doing and have a good reason to do so (see [Understanding\
+          \ the orderingId Parameter](https://developers.coveo.com/x/sYo9Ag)).  \n\
+          **Example:**  `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: false
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target Push source (see [Creating\
+          \ a Push Source](https://developers.coveo.com/x/34s9Ag)).  \n**Example:**\
+          \ `rp5rxzbdz753uhndklv2ztkfgy-mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: sourceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Add or update an item
+      tags:
+      - Item
+      x-pretty-name: addUpdateDocument
+  /organizations/{organizationId}/sources/{sourceId}/documents/batch:
+    put:
+      consumes:
+      - application/json
+      description: Manages a batch of items in a Push source.
+      externalDocs:
+        description: Managing Batches of Items in a Push Source
+        url: https://developers.coveo.com/x/KJE9Ag
+      parameters:
+      - description: "The unique identifier of the Amazon S3 file container into which\
+          \ the the JSON definition of the content update was previously uploaded\
+          \ (see [Creating a File Container](https://developers.coveo.com/x/dIE9Ag)).\
+          \  \n**Example:** d22778ca-7f42-4e13-9d9a-47d01bce866c"
+        in: query
+        name: fileId
+        required: true
+        type: string
+      - description: "A value indicating the order of arrival of the Push operation\
+          \ in the Coveo Cloud V2 indexing pipeline. A lower value corresponds to\
+          \ an older operation.  \nBy default, the service automatically sets this\
+          \ parameter to the current number of milliseconds since Unix Epoch.  \n\
+          Specifying a custom `orderingId` value is typically not recommended unless\
+          \ you know what you are doing and have a good reason to do so (see [Understanding\
+          \ the orderingId Parameter](https://developers.coveo.com/x/sYo9Ag)).  \n\
+          **Example:**  `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: false
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target Push source (see [Creating\
+          \ a Push Source](https://developers.coveo.com/x/34s9Ag)).  \n**Example:**\
+          \ `rp5rxzbdz753uhndklv2ztkfgy-mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: sourceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Add, update, and/or delete a batch of items
+      tags:
+      - Item
+      x-pretty-name: addUpdateDeleteBatchedDocument
+  /organizations/{organizationId}/sources/{sourceId}/documents/olderthan:
+    delete:
+      consumes:
+      - application/json
+      description: In a specific Push source, deletes all items whose last update
+        was made by a Push API operation whose `orderingId` is strictly lower than
+        a specified value.
+      externalDocs:
+        description: Deleting Old Items in a Push Source
+        url: https://developers.coveo.com/x/SJE9Ag
+      parameters:
+      - description: "The lowest Push API operation timestamp value an item must be\
+          \ associated to in order not to be deleted from the Push source.  \n**Example:**\
+          \ `1506700606240`"
+        format: int64
+        in: query
+        name: orderingId
+        required: true
+        type: integer
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "A grace period (in minutes) whose purpose is to give the Coveo\
+          \ Cloud V2 indexing pipeline enough time to finish processing any previously\
+          \ enqueued operation that would affect the target Push source.  \n**Example:**\
+          \ `5`"
+        format: int32
+        in: query
+        minimum: 0
+        name: queueDelay
+        required: false
+        type: integer
+      - description: "The unique identifier of the target Push source (see [Creating\
+          \ a Push Source](https://developers.coveo.com/x/34s9Ag)).  \n**Example:**\
+          \ `rp5rxzbdz753uhndklv2ztkfgy-mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: sourceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '202':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Delete old items
+      tags:
+      - Item
+      x-pretty-name: deleteDocumentsOlderThan
+  /organizations/{organizationId}/sources/{sourceId}/status:
+    post:
+      description: "Modifies the current status of a Push source.  \nThis operation\
+        \ allows you to update the activity logs of a Push source (and consequently\
+        \ the activity indicators in the Coveo Cloud V2 administration console). \
+        \ \nPushing an *active* source status (i.e., `REBUILD`, `REFRESH`, or `INCREMENTAL`)\
+        \ creates an activity. Pushing the `IDLE` status terminates the ongoing activity\
+        \ and marks it as completed."
+      externalDocs:
+        description: Updating the Status of a Push Source
+        url: https://developers.coveo.com/x/oYs9Ag
+      parameters:
+      - description: "The unique identifier of the target Coveo Cloud V2 organization.\
+          \  \n**Example:** `mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: "The unique identifier of the target Push source (see [Creating\
+          \ a Push Source](https://developers.coveo.com/x/34s9Ag)).  \n**Example:**\
+          \ `rp5rxzbdz753uhndklv2ztkfgy-mycoveocloudv2organizationg8tp8wu3`"
+        in: path
+        name: sourceId
+        required: true
+        type: string
+      - description: "The status to set the Push source to.  \nThe possible values\
+          \ are: `INCREMENTAL`, `REFRESH`, `REBUILD`, and `IDLE`.  \n**Example:**\
+          \ `REBUILD`"
+        enum:
+        - INCREMENTAL
+        - REFRESH
+        - REBUILD
+        - IDLE
+        in: query
+        name: statusType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        '201':
+          description: Success
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+        '400':
+          description: Bad request
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: Precondition Failed
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: Unsupported Media Type
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '429':
+          description: Too many Requests
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '504':
+          description: Gateway Timeout
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/GatewayTimeoutError'
+      security:
+      - oauth2:
+        - full
+      summary: Set the status of a Push source
+      tags:
+      - Source Status
+      x-pretty-name: setSourceStatus
+schemes:
+- https
+securityDefinitions:
+  oauth2:
+    authorizationUrl: https://platform.cloud.coveo.com/oauth/authorize
+    flow: implicit
+    scopes:
+      full: Required
+    type: oauth2
+swagger: '2.0'
+tags:
+- description: Create a file container
+  name: File Container
+- description: Manage items in a Push source
+  name: Item
+- description: Manage security identities in a security identity provider
+  name: Security Identity
+- description: Update the status of a Push source
+  name: Source Status
