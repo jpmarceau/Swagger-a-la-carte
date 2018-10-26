@@ -19,7 +19,7 @@ module Jekyll
 
         def render(context)
             # Ensure the swagger version is supported
-            data = context.registers[:site].data["swagger_specifications"]["petstore"]
+            data = context.registers[:site].data["swagger_specifications"]["SearchApi"]
             if data['swagger'] != '2.0'
                 "Swagger Version not supported"
             elsif @parsed_input[-1]['type'] == 'Schema Object'
@@ -27,7 +27,7 @@ module Jekyll
                 puts so.get_output()
                 "#{so.get_output()}"
             else 
-                puts 'not currently supported'
+                'not supported'
             end
         end
 
