@@ -25,19 +25,19 @@ module Salc
         end
 
         def format_heading()
-            current_heading = options["current_heading"] || 1 # TODO replace 1 with constant
+            current_heading = @options["current_heading"] || 1 # TODO replace 1 with constant
             heading_element = current_heading > 6 ? "div" : "h#{current_heading}" # TODO replace 6 with constant
             required = is_required?() ? ", required" : ""
             type = "undefined"
-            if @object.has_key?["$ref"]
+            if @object.has_key?("$ref")
                 type = @object["$ref"].split("/").last # e.g., 'Pet'
-            elsif @object.has_key?["type"]
+            elsif @object.has_key?("type")
                 type = @object["type"] # e.g., 'string'
             end
             if type == "array"
                 item_type = nil
                 if @object.has_key?["item"]
-                    if @object.has_key?["item"]["$ref"]item["$ref"]
+                    if @object.has_key?["item"]["$ref"]
                         item_type = @object["item"]["$ref"].split('/').last # e.g., 'Pet'
                     elsif @object.has_key["items"]["type"]
                         item_type = @object["item"]["type"]
@@ -48,7 +48,7 @@ module Salc
             type_format = @object.has_key?("format") ? " [#{@object["format"]}]" : "" # e.g., '[int32]', '[dateTime]'
             # e.g., 'photoUrls (array of string [URL]), required'
             heading_string = "<span>#{@object_name}<span> (<span>#{type}<span>#{type_format}</span></span>)</span><span>#{required}</span></span>"
-            "<#{heading_element}>#{heading_sring}</#{heading_element}>"
+            "<#{heading_element}>#{heading_string}</#{heading_element}>"
         end
 
         def is_required?()
@@ -62,5 +62,6 @@ module Salc
 
         def format_default_value()
             @object.has_key?("default") ? "<p>Default value: <code>#{object["default"]}</code></p>" : ""
+        end
     end
 end

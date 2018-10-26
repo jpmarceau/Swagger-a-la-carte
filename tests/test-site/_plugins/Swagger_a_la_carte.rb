@@ -1,4 +1,5 @@
 require 'json'
+require_relative 'salc_schema_object'
 
 module Jekyll
     class Swagger_a_la_carte < Liquid::Tag
@@ -10,19 +11,22 @@ module Jekyll
             input_path = input.split[0].split('.')
             classifyArr(input_path)
             puts input_path
+            @parsed_input = input_path
 
             # json options
             input_options = JSON.parse(input.split[1])
+            @parsed_options = input_options
         end
 
         def render(context)
             # Ensure the swagger version is supported
-
             data = context.registers[:site].data["swagger_specifications"]["petstore"]
             if data['swagger'] != '2.0'
                 "Swagger Version not supported"
             else
-                "#{@input} #{data}"
+                so = Salc::SchemaObject.new(@parsed_input, @parsed_options, context)
+                "#{so.get_output()}"
+                # "#{@input} #{data}"
             end
         end
 
