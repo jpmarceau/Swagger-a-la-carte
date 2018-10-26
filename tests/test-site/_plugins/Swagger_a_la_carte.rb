@@ -20,13 +20,12 @@ module Jekyll
 
         def render(context)
             # Ensure the swagger version is supported
-            data = context.registers[:site].data["swagger_specifications"]["petstore"]
+            data = context.registers[:site].data["swagger_specifications"]["SearchApi"]
             if data['swagger'] != '2.0'
                 "Swagger Version not supported"
             else
                 so = Salc::SchemaObject.new(@parsed_input, @parsed_options, context)
                 "#{so.get_output()}"
-                # "#{@input} #{data}"
             end
         end
 
